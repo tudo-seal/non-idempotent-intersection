@@ -1,0 +1,10 @@
+-Q . NonIdempotent
+
+facts.v
+ulc.v
+ulc_facts.v
+#stlc_nf.v
+nitlc.v
+bag_equiv_facts.v
+nitlc_facts.v
+#nitlc_typ.v
