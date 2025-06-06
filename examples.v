@@ -1,7 +1,7 @@
 From Stdlib Require Import List Permutation ssreflect.
 Import ListNotations.
 
-From NonIdempotent Require Import ulc nitlc nitlc_facts.
+From NonIdempotent Require Import ulc ulc_facts nitlc nitlc_facts.
 Import NitlcNotations.
 
 (* \x.x *)
@@ -145,13 +145,39 @@ Proof.
     + apply HA.
 Qed.
 
-Hint Extern 1 (Forall2 _ _ _) => apply: Forall2_impl; last by eassumption : core.
-Hint Extern 1 (nitlc _ _ _) => match goal with [H : nitlc _ (app _ _) _ |- _] => move=> /nitlcE in H; firstorder subst end : core.
-Hint Extern 1 (nitlc _ _ _) => match goal with [H : nitlc _ (lam _) _ |- _] => move=> /nitlcE in H; firstorder subst end : core.
-Hint Extern 1 (nitlc _ _ _) => match goal with [H : niarr _ _ = niarr _ _ |- _] => case: H; firstorder subst end : core.
+(* subst, ren example *)
+Goal forall M N, subst (scons N var) (ren S M) = M.
+Proof.
+  intros.
+  rewrite subst_ren /=.
+  rewrite subst_var.
+  reflexivity. 
+Qed.
 
-Theorem nitlc_subject_reduction' Gamma M N A : step M N -> nitlc Gamma M A -> nitlc Gamma N A.
+Hint Extern 1 => apply: Forall2_impl; last by eassumption : core.
+Hint Extern 1 => match goal with [H : nitlc _ (app _ _) _ |- _] => move=> /nitlcE in H; firstorder subst end : core.
+Hint Extern 1 => match goal with [H : nitlc _ (lam _) _ |- _] => move=> /nitlcE in H; firstorder subst end : core.
+Hint Extern 1 => match goal with [H : niarr _ _ = niarr _ _ |- _] => case: H; firstorder subst end : core.
+Hint Extern 0 => eassumption : core.
+
+(* eauto example *)
+Theorem nitlc_subject_reduction_eauto Gamma M N A : step M N -> nitlc Gamma M A -> nitlc Gamma N A.
 Proof.
   move=> HMN. elim: HMN Gamma A.
   all: eauto using nitlc_substitution, nitlc.
+Qed.
+
+(* ssreflect example *)
+Theorem nitlc_subject_reduction_ssr Gamma M N A : step M N -> nitlc Gamma M A -> nitlc Gamma N A.
+Proof.
+  intros HMN. elim: HMN Gamma A.
+  - move=> > /nitlcE [?] [?] [?] [?].
+    move=> [/nitlcE] [?] [?] [[<- <-]] ??.
+    by apply: nitlc_substitution.
+  - move=> > ? IH > /nitlcE [?] [?] [->] /IH ?.
+    by constructor.
+  - move=> > ? IH > /nitlcE [?] [?] [?] [?] [/IH] ??.
+    by econstructor.
+  - move=> > ?? > /nitlcE [?] [?] [?] [?] [?] /Forall2_impl H.
+    by econstructor; [..|apply: H].
 Qed.

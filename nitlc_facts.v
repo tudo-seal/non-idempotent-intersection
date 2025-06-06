@@ -14,7 +14,7 @@ Import NitlcNotations.
 (* useful case analysis principle *)
 Lemma nitlcE Gamma M A : nitlc Gamma M A ->
   match M with
-  | var x => In A (nth x Gamma nil)
+  | var x => In A (nth x Gamma [])
   | app M N => exists Gamma' Deltas u,
       bag_equiv [Gamma] (Gamma' :: Deltas) /\
       nitlc Gamma' M (niarr u A) /\
@@ -35,7 +35,7 @@ Qed.
 *)
 Lemma nitlc_ind' (P : environment -> tm -> nity -> Prop) :
   (forall Gamma x A,
-    In A (nth x Gamma nil) -> 
+    In A (nth x Gamma []) -> 
     P Gamma (var x) A) ->
   (forall Gamma Deltas Gamma' M N u A,
     bag_equiv [Gamma] (Gamma' :: Deltas) ->
@@ -132,7 +132,7 @@ Qed.
 *)
 Theorem nitlc_renaming Gamma Delta xi A M :
   (forall x1 x2, xi x1 = xi x2 -> x1 = x2) ->
-  (forall x, nth x Gamma nil = nth (xi x) Delta nil) ->
+  (forall x, nth x Gamma [] = nth (xi x) Delta []) ->
   nitlc Gamma M A ->
   nitlc Delta (ren xi M) A.
 Proof.
