@@ -1,4 +1,4 @@
-From Stdlib Require Import List Permutation.
+From Stdlib Require Import List Permutation ssreflect.
 Import ListNotations.
 
 From NonIdempotent Require Import ulc nitlc nitlc_facts.
@@ -143,4 +143,15 @@ Proof.
   - apply (nitlc_subject_reduction Gamma (app omega I)).
     + constructor.
     + apply HA.
+Qed.
+
+Hint Extern 1 (Forall2 _ _ _) => apply: Forall2_impl; last by eassumption : core.
+Hint Extern 1 (nitlc _ _ _) => match goal with [H : nitlc _ (app _ _) _ |- _] => move=> /nitlcE in H; firstorder subst end : core.
+Hint Extern 1 (nitlc _ _ _) => match goal with [H : nitlc _ (lam _) _ |- _] => move=> /nitlcE in H; firstorder subst end : core.
+Hint Extern 1 (nitlc _ _ _) => match goal with [H : niarr _ _ = niarr _ _ |- _] => case: H; firstorder subst end : core.
+
+Theorem nitlc_subject_reduction' Gamma M N A : step M N -> nitlc Gamma M A -> nitlc Gamma N A.
+Proof.
+  move=> HMN. elim: HMN Gamma A.
+  all: eauto using nitlc_substitution, nitlc.
 Qed.

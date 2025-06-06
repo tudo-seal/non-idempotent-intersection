@@ -365,4 +365,5 @@ Proof.
       apply IH.
 Qed.
 
+Check nitlc_subject_reduction.
 Print Assumptions nitlc_subject_reduction.

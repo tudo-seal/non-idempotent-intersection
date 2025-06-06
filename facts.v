@@ -330,6 +330,34 @@ Proof.
     + apply: nth_middle_neq. move=> ?. apply: Hy. apply: Hxi. lia.
 Qed.
 
+Lemma nth_error_Forall2 {A B : Type} (P : A -> B -> Prop) l1 l2 :
+  length l1 = length l2 ->
+  (forall n a b, nth_error l1 n = Some a -> nth_error l2 n = Some b -> P a b) ->
+  Forall2 P l1 l2.
+Proof.
+  elim: l1 l2; first by case.
+  move=> ?? IH [|??] /=; first done.
+  move=> [/IH] {}IH H. constructor.
+  - by apply: (H 0).
+  - apply: IH => - n *.
+    by apply: (H (S n)).
+Qed.
+
+Lemma Forall2_nth_error {A B : Type} (P : A -> B -> Prop) l1 l2 :
+  Forall2 P l1 l2 ->
+  (forall n a b, nth_error l1 n = Some a -> nth_error l2 n = Some b -> P a b).
+Proof.
+  elim; first by case.
+  move=> > ?? IH [|n] > /=; first by congruence.
+  by apply: IH.
+Qed.
+
+Lemma concat_nils {A: Type} (l : list (list A)) : (forall x, In x l -> x = []) -> concat l = [].
+Proof.
+  move=> ?.
+  by apply /concat_nil_Forall /Forall_forall.
+Qed.
+
 Lemma Permutation_concat_split {X : Type} xi (Deltas : list (list (list X))) Gamma :
   (forall x1 x2, xi x1 = xi x2 -> x1 = x2) ->
   (forall x, Permutation (concat (map (fun Delta => nth x Delta []) Deltas)) (nth (xi x) Gamma [])) ->
@@ -391,11 +419,7 @@ Proof.
            by apply: nth_middle_neq.
 Qed.
 
-Lemma concat_nils {A: Type} (l : list (list A)) : (forall x, In x l -> x = []) -> concat l = [].
-Proof.
-  move=> ?.
-  by apply /concat_nil_Forall /Forall_forall.
-Qed.
+
 
 Lemma Forall2_concat_split {A B : Type} (P : A -> B -> Prop) ls l' :
   Forall2 P l' (concat ls) ->
@@ -412,26 +436,4 @@ Proof.
     move: IH => [l's] [->] ?.
     exists (l'1 :: l's). split; first done.
     by constructor.
-Qed.
-
-Lemma nth_error_Forall2 {A B : Type} (P : A -> B -> Prop) l1 l2 :
-  length l1 = length l2 ->
-  (forall n a b, nth_error l1 n = Some a -> nth_error l2 n = Some b -> P a b) ->
-  Forall2 P l1 l2.
-Proof.
-  elim: l1 l2; first by case.
-  move=> ?? IH [|??] /=; first done.
-  move=> [/IH] {}IH H. constructor.
-  - by apply: (H 0).
-  - apply: IH => - n *.
-    by apply: (H (S n)).
-Qed.
-
-Lemma Forall2_nth_error {A B : Type} (P : A -> B -> Prop) l1 l2 :
-  Forall2 P l1 l2 ->
-  (forall n a b, nth_error l1 n = Some a -> nth_error l2 n = Some b -> P a b).
-Proof.
-  elim; first by case.
-  move=> > ?? IH [|n] > /=; first by congruence.
-  by apply: IH.
 Qed.
